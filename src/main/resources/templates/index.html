@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard · BookMarkr</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="brand"><span class="emoji">🔖</span> BookMarkr</div>
+        <div class="user-info">
+            <span>Hi, <span class="user-name" th:text="${user.name}">User</span></span>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-logout">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="main-container">
+
+        <div class="page-title-row">
+            <h1>Your Bookmarks</h1>
+            <a th:href="@{/bookmarks/new}" class="btn btn-primary" style="width:auto;">+ Add Bookmark</a>
+        </div>
+
+        <form class="toolbar" th:action="@{/bookmarks}" method="get">
+            <input type="hidden" name="tag" th:value="${activeTag}">
+            <div class="search-box">
+                <input type="text" name="query" th:value="${query}" placeholder="Search by title, description, or URL...">
+            </div>
+            <button type="submit" class="btn btn-secondary">Search</button>
+        </form>
+
+        <div class="tag-filters" th:if="${!allTags.isEmpty()}">
+            <a th:href="@{/bookmarks(tag='all', query=${query})}"
+               class="tag-pill" th:classappend="${activeTag == 'all'} ? ' active'">All</a>
+            <a th:each="t : ${allTags}"
+               th:href="@{/bookmarks(tag=${t}, query=${query})}"
+               th:text="${t}"
+               class="tag-pill"
+               th:classappend="${activeTag == t} ? ' active'">tag</a>
+        </div>
+
+        <div th:if="${!bookmarks.isEmpty()}" class="bookmark-grid">
+            <div class="bookmark-card" th:each="b : ${bookmarks}">
+                <div class="card-top-row">
+                    <h3 class="bookmark-title" th:text="${b.title}">Title</h3>
+                    <button type="button" class="btn-copy" th:attr="data-url=${b.url}" onclick="copyBookmarkUrl(this)" title="Copy URL"
+                            style="margin-left: auto; flex-shrink: 0; width: 24px; height: 24px; padding: 0; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; color: #5a726b;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                </div>
+                <a class="bookmark-url" th:href="${b.url}" th:text="${b.url}" target="_blank" rel="noopener">https://example.com</a>
+                <p class="bookmark-description" th:if="${b.description != null and !b.description.isEmpty()}" th:text="${b.description}">Description</p>
+                <div class="tag-badges" th:if="${b.tags != null and !b.tags.isEmpty()}">
+                    <span class="tag-badge" th:each="t : ${b.tags}" th:text="${t}">tag</span>
+                </div>
+                <div class="card-actions">
+                    <a th:href="@{/bookmarks/edit/{id}(id=${b.id})}" class="btn btn-secondary">Edit</a>
+                    <form th:action="@{/bookmarks/delete/{id}(id=${b.id})}" method="post" onsubmit="return confirm('Delete this bookmark?');" style="flex:1;margin:0;">
+                        <button type="submit" class="btn btn-danger" style="width:100%;">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${bookmarks.isEmpty()}" class="empty-state">
+            <div class="icon">🔖</div>
+            <h3>No bookmarks yet.</h3>
+            <p>Save your first useful link.</p>
+            <a th:href="@{/bookmarks/new}" class="btn btn-primary">+ Add Bookmark</a>
+        </div>
+
+    </main>
+
+    <script>
+        function copyBookmarkUrl(btn) {
+            const url = btn.getAttribute('data-url');
+
+            const flash = () => {
+                btn.classList.add('copied');
+                setTimeout(() => btn.classList.remove('copied'), 900);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(flash).catch(flash);
+            } else {
+                const temp = document.createElement('textarea');
+                temp.value = url;
+                temp.style.position = 'fixed';
+                temp.style.opacity = '0';
+                document.body.appendChild(temp);
+                temp.focus();
+                temp.select();
+                try {
+                    document.execCommand('copy');
+                } catch (e) { /* no-op */ }
+                document.body.removeChild(temp);
+                flash();
+            }
+        }
+    </script>
+
+</body>
+</html>

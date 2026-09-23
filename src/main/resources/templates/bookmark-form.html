@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${editMode} ? 'Edit Bookmark · BookMarkr' : 'Add Bookmark · BookMarkr'">Bookmark · BookMarkr</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="brand"><span class="emoji">🔖</span> BookMarkr</div>
+        <a th:href="@{/bookmarks}" class="btn btn-secondary" style="width:auto;">← Back</a>
+    </header>
+
+    <main class="form-page">
+        <div class="form-card">
+            <h1 th:text="${editMode} ? 'Edit Bookmark' : 'Add Bookmark'">Add Bookmark</h1>
+
+            <form th:action="${editMode} ? @{/bookmarks/update/{id}(id=${bookmarkId})} : @{/bookmarks}"
+                  th:object="${bookmarkForm}" method="post">
+
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" th:field="*{title}" required autofocus>
+                    <div class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="url">URL</label>
+                    <input type="url" id="url" th:field="*{url}" placeholder="https://example.com" required>
+                    <div class="field-error" th:if="${#fields.hasErrors('url')}" th:errors="*{url}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" th:field="*{description}" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+                    <input type="text" id="tags" th:field="*{tags}" placeholder="java, spring, backend">
+                    <div class="hint">Separate tags with commas.</div>
+                </div>
+
+                <div class="form-actions">
+                    <a th:href="@{/bookmarks}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Bookmark</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+</body>
+</html>
